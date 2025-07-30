@@ -25,7 +25,7 @@ export default class ResourceManager {
       let loadedCount = 0
 
       for (const symbolType of SYMBOL_TYPES) {
-        const symbolPath = `public/symbols/${symbolType}`
+        const symbolPath = `/symbols/${symbolType}`
         console.log(`Loading symbol: ${symbolPath}`)
 
         try {
