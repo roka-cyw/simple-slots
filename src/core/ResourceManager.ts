@@ -50,23 +50,7 @@ export default class ResourceManager {
   private createFallbackTextures(): void {
     console.log('Creating fallback textures...')
 
-    const colors = [
-      0xff4757, // Red
-      0x2ed573, // Green
-      0x1e90ff, // Blue
-      0xffa502, // Orange
-      0xff6b7a, // Pink
-      0x5352ed, // Purple
-      0xff9ff3, // Light Purple
-      0x54a0ff, // Light Blue
-      0x5f27cd, // Dark Purple
-      0xee5253, // Dark Red
-      0x00d2d3, // Cyan
-      0xff9f43, // Yellow
-      0x10ac84 // Teal
-    ]
-
-    SYMBOL_TYPES.forEach((symbolType, index) => {
+    SYMBOL_TYPES.forEach((symbolType) => {
       this.symbolTextures.set(symbolType, PIXI.Texture.WHITE)
     })
 
@@ -102,10 +86,7 @@ export default class ResourceManager {
     return SYMBOL_TYPES[Math.floor(Math.random() * SYMBOL_TYPES.length)]
   }
 
-  public getSymbolColor(symbolType: string): number {
-    // Return white (no tint) since we're using actual symbol textures now
-    return 0xffffff
-  }
+
 
   public isResourcesLoaded(): boolean {
     return this.isLoaded

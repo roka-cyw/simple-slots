@@ -12,9 +12,9 @@ export abstract class Scene {
 
   public abstract init(): void
 
-  protected updateGameField(newWidth: number, newHeight: number): void {}
+  protected updateGameField(_newWidth: number, _newHeight: number): void {}
 
-  public onResize(newWidth: number, newHeight: number): void {}
+  public onResize(_newWidth: number, _newHeight: number): void {}
 
   public getContainer(): PIXI.Container {
     return this.container

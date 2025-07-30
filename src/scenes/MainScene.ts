@@ -2,19 +2,16 @@ import * as PIXI from 'pixi.js'
 import { Scene } from '../core/abstracts/Scene'
 import SlotMachine from '../entities/SlotMachine'
 import SpinButton from '../entities/SpinButton'
-import ResourceManager from '../core/ResourceManager'
 
 export default class MainScene extends Scene {
   private static readonly BACKGROUND_COLOR = 0x2c3e50
 
   private slotMachine!: SlotMachine
   private spinButton!: SpinButton
-  private resourceManager: ResourceManager
   private gameLoopFn?: (ticker: PIXI.Ticker) => void
 
   constructor(app: PIXI.Application) {
     super(app)
-    this.resourceManager = ResourceManager.getInstance()
   }
 
   public async init(): Promise<void> {

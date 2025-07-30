@@ -1,17 +1,14 @@
 import * as PIXI from 'pixi.js'
 import { SLOT_CONFIG, type SymbolType } from '../utils/constants'
-import ResourceManager from '../core/ResourceManager'
 
 export default class Symbol {
   public sprite: PIXI.Sprite
   public symbolType: SymbolType
   private symbolId: string
-  private resourceManager: ResourceManager
 
   constructor(texture: PIXI.Texture, symbolType: SymbolType) {
     this.symbolType = symbolType
     this.symbolId = crypto.randomUUID()
-    this.resourceManager = ResourceManager.getInstance()
 
     this.sprite = new PIXI.Sprite(texture)
     this.setupSprite()
