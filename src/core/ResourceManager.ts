@@ -23,11 +23,11 @@ export default class ResourceManager {
     try {
       // Load each symbol file individually
       let loadedCount = 0
-      
+
       for (const symbolType of SYMBOL_TYPES) {
-        const symbolPath = `/src/assets/symbols/${symbolType}`
+        const symbolPath = `public/symbols/${symbolType}`
         console.log(`Loading symbol: ${symbolPath}`)
-        
+
         try {
           const texture = await PIXI.Assets.load(symbolPath)
           this.symbolTextures.set(symbolType, texture)
@@ -50,7 +50,7 @@ export default class ResourceManager {
   private createFallbackTextures(): void {
     console.log('Creating fallback textures...')
 
-    SYMBOL_TYPES.forEach((symbolType) => {
+    SYMBOL_TYPES.forEach(symbolType => {
       this.symbolTextures.set(symbolType, PIXI.Texture.WHITE)
     })
 
@@ -64,7 +64,7 @@ export default class ResourceManager {
       console.error(`No texture found for symbol: ${symbolName}`)
       return undefined
     }
-    
+
     console.log(`Getting texture for ${symbolName}: ${texture.width}x${texture.height}`)
     return texture
   }
@@ -85,8 +85,6 @@ export default class ResourceManager {
   public getRandomSymbolType(): string {
     return SYMBOL_TYPES[Math.floor(Math.random() * SYMBOL_TYPES.length)]
   }
-
-
 
   public isResourcesLoaded(): boolean {
     return this.isLoaded
