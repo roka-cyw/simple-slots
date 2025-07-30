@@ -25,11 +25,6 @@ export const SYMBOL_TYPES = [
 
 export type SymbolType = (typeof SYMBOL_TYPES)[number]
 
-export const ASSETS = {
-  SYMBOL_JSON: '/src/assets/atlas/symbols.json',
-  SYMBOL_ATLAS: '/src/assets/atlas/symbols.png'
-}
-
 export const GameState = {
   IDLE: 'idle',
   SPINNING: 'spinning',

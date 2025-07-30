@@ -1,12 +1,10 @@
 import * as PIXI from 'pixi.js'
-import { SYMBOL_TYPES, ASSETS } from '../utils/constants'
+import { SYMBOL_TYPES } from '../utils/constants'
 
 export default class ResourceManager {
   private static instance: ResourceManager
   private symbolTextures: Map<string, PIXI.Texture> = new Map()
   private isLoaded: boolean = false
-  private atlasTexture: PIXI.Texture | null = null
-  private atlasData: any = null
 
   private constructor() {}
 
@@ -20,77 +18,31 @@ export default class ResourceManager {
   public async loadSymbols(): Promise<void> {
     if (this.isLoaded) return
 
-    console.log('Loading symbol atlas...')
+    console.log('Loading individual symbol files...')
 
     try {
-      // Load the atlas texture using a different approach
-      const image = new Image()
-      image.src = '/src/assets/atlas/symbols.png'
-
-      console.log('Loading image from:', image.src)
-
-      await new Promise((resolve, reject) => {
-        image.onload = () => {
-          console.log('Image loaded successfully, dimensions:', image.width, 'x', image.height)
-          resolve(null)
-        }
-        image.onerror = error => {
-          console.error('Failed to load image:', error)
-          reject(error)
-        }
-      })
-
-      // Create texture from image
-      this.atlasTexture = PIXI.Texture.from(image)
-      console.log('PIXI texture created from image')
-
-      // Load the atlas JSON data
-      console.log('Loading JSON from:', ASSETS.SYMBOL_JSON)
-      const response = await fetch(ASSETS.SYMBOL_JSON)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch JSON: ${response.status} ${response.statusText}`)
-      }
-      this.atlasData = await response.json()
-      console.log('JSON loaded successfully, frames:', Object.keys(this.atlasData.frames).length)
-
-      // Create textures for each symbol from the atlas using canvas extraction
-      let createdTextures = 0
-      SYMBOL_TYPES.forEach(symbolType => {
-        const frameData = this.atlasData.frames[symbolType]
-        if (frameData) {
-          const { x, y, w, h } = frameData.frame
-          console.log(`Creating texture for ${symbolType}: x=${x}, y=${y}, w=${w}, h=${h}`)
-
-          // Extract the symbol region using canvas
-          const canvas = document.createElement('canvas')
-          canvas.width = w
-          canvas.height = h
-          const ctx = canvas.getContext('2d')!
-
-          // Draw the specific region from the atlas to the canvas
-          ctx.drawImage(image, x, y, w, h, 0, 0, w, h)
-
-          // Create texture from the canvas
-          const texture = PIXI.Texture.from(canvas)
-
-          // Verify the texture was created correctly
-          console.log(`Texture created for ${symbolType}:`, {
-            width: texture.width,
-            height: texture.height
-          })
-
+      // Load each symbol file individually
+      let loadedCount = 0
+      
+      for (const symbolType of SYMBOL_TYPES) {
+        const symbolPath = `/src/assets/symbols/${symbolType}`
+        console.log(`Loading symbol: ${symbolPath}`)
+        
+        try {
+          const texture = await PIXI.Assets.load(symbolPath)
           this.symbolTextures.set(symbolType, texture)
-          createdTextures++
-        } else {
-          console.warn(`Frame data not found for symbol: ${symbolType}`)
+          loadedCount++
+          console.log(`Successfully loaded ${symbolType}: ${texture.width}x${texture.height}`)
+        } catch (error) {
+          console.error(`Failed to load symbol ${symbolType}:`, error)
         }
-      })
+      }
 
       this.isLoaded = true
-      console.log('Symbol atlas loaded successfully:', createdTextures, 'textures created')
+      console.log(`Symbol loading complete: ${loadedCount}/${SYMBOL_TYPES.length} symbols loaded`)
     } catch (error) {
-      console.error('Failed to load symbol atlas:', error)
-      // Fallback to simple colored squares if atlas loading fails
+      console.error('Failed to load symbols:', error)
+      // Fallback to simple colored squares if loading fails
       this.createFallbackTextures()
     }
   }
@@ -123,7 +75,14 @@ export default class ResourceManager {
   }
 
   public getSymbolTexture(symbolName: string): PIXI.Texture | undefined {
-    return this.symbolTextures.get(symbolName)
+    const texture = this.symbolTextures.get(symbolName)
+    if (!texture) {
+      console.error(`No texture found for symbol: ${symbolName}`)
+      return undefined
+    }
+    
+    console.log(`Getting texture for ${symbolName}: ${texture.width}x${texture.height}`)
+    return texture
   }
 
   public getAllSymbolTextures(): PIXI.Texture[] {

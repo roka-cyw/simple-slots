@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js'
 import SlotReel from './SlotReel'
-import { SLOT_CONFIG, GameState, ANIMATION } from '../utils/constants'
+import { SLOT_CONFIG, GameState, ANIMATION, SYMBOL_TYPES, type SymbolType } from '../utils/constants'
 
 export default class SlotMachine {
   public container: PIXI.Container
@@ -56,16 +56,27 @@ export default class SlotMachine {
   public async startSpin(): Promise<void> {
     if (this.gameState !== GameState.IDLE) return
 
+    console.log('=== STARTING SPIN ===')
     this.gameState = GameState.SPINNING
 
-    // Generate new symbols for all reels (but keep current symbols displayed)
-    this.reels.forEach(reel => {
-      reel.refreshSymbols() // Generate new symbols in background
-    })
+    // Generate the final grid first
+    const finalGrid = this.generateFinalGrid()
+    console.log('Generated final grid:', finalGrid)
 
-    // Small delay to ensure new symbols are generated
+    // Set the final symbols for each reel
+    for (let reelIndex = 0; reelIndex < SLOT_CONFIG.REELS; reelIndex++) {
+      const reelSymbols: SymbolType[] = []
+      for (let row = 0; row < SLOT_CONFIG.ROWS; row++) {
+        reelSymbols.push(finalGrid[row][reelIndex])
+      }
+      console.log(`Setting final symbols for reel ${reelIndex}:`, reelSymbols)
+      this.reels[reelIndex].setFinalSymbols(reelSymbols)
+    }
+
+    // Small delay to ensure final symbols are set
     await new Promise(resolve => setTimeout(resolve, 100))
 
+    console.log('Starting all reels spinning...')
     // Start all reels spinning simultaneously (this will switch to new symbols)
     this.reels.forEach(reel => {
       reel.startSpin()
@@ -75,9 +86,11 @@ export default class SlotMachine {
     await new Promise(resolve => setTimeout(resolve, ANIMATION.SPIN_DURATION * 1000))
 
     this.gameState = GameState.STOPPING
+    console.log('=== STOPPING REELS ===')
 
     // Stop reels one by one from left to right with delay
     for (let i = 0; i < this.reels.length; i++) {
+      console.log(`Stopping reel ${i}`)
       this.reels[i].requestStop()
       // Add delay between stops for cascading effect
       if (i < this.reels.length - 1) {
@@ -86,15 +99,32 @@ export default class SlotMachine {
     }
 
     this.gameState = GameState.IDLE
+    console.log('=== SPIN COMPLETE ===')
 
     // Check for wins after all reels stopped
     this.checkForWins()
   }
 
+  private generateFinalGrid(): SymbolType[][] {
+    const grid: SymbolType[][] = []
+
+    // Generate the final grid
+    for (let row = 0; row < SLOT_CONFIG.ROWS; row++) {
+      grid[row] = []
+      for (let reel = 0; reel < SLOT_CONFIG.REELS; reel++) {
+        // Generate random symbol for this position
+        const symbolTypes = Object.values(SYMBOL_TYPES)
+        grid[row][reel] = symbolTypes[Math.floor(Math.random() * symbolTypes.length)]
+      }
+    }
+
+    return grid
+  }
+
   private checkForWins(): void {
     const grid: string[][] = []
 
-    // Build the symbol grid
+    // Build the symbol grid from visible symbols
     for (let row = 0; row < SLOT_CONFIG.ROWS; row++) {
       grid[row] = []
       for (let reel = 0; reel < SLOT_CONFIG.REELS; reel++) {

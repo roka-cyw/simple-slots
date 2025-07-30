@@ -115,6 +115,57 @@ export default class SlotReel {
     console.log(`Generated ${this.newSymbols.length} new symbols for reel ${this.reelIndex}`)
   }
 
+  // New method to set final symbols for the reel
+  public setFinalSymbols(finalSymbols: SymbolType[]): void {
+    console.log(`Reel ${this.reelIndex}: setFinalSymbols called with:`, finalSymbols)
+    
+    // Clear any existing new symbols
+    this.newSymbols.forEach(symbol => {
+      if (symbol.sprite && symbol.sprite.parent) {
+        symbol.sprite.parent.removeChild(symbol.sprite)
+      }
+      symbol.destroy()
+    })
+    this.newSymbols = []
+
+    // Create symbols based on the final result
+    const totalSymbolsNeeded = 8
+
+    for (let i = 0; i < totalSymbolsNeeded; i++) {
+      let symbolType: SymbolType
+      
+      if (i < finalSymbols.length) {
+        // Use the provided final symbols for the visible positions
+        symbolType = finalSymbols[i]
+        console.log(`Reel ${this.reelIndex}: Using final symbol ${i}: ${symbolType}`)
+      } else {
+        // Fill remaining positions with random symbols (for buffer)
+        symbolType = this.getRandomSymbolType()
+        console.log(`Reel ${this.reelIndex}: Using random symbol ${i}: ${symbolType}`)
+      }
+      
+      const texture = this.resourceManager.getSymbolTexture(symbolType)
+      
+      if (!texture) {
+        console.error(`No texture available for symbol type ${symbolType}`)
+        continue
+      }
+      
+      const symbol = new Symbol(texture, symbolType)
+      
+      // Position symbols with extra spacing at top
+      const yPosition = i * (SLOT_CONFIG.SYMBOL_HEIGHT + SLOT_CONFIG.SYMBOL_SPACING) - SLOT_CONFIG.SYMBOL_HEIGHT
+      
+      symbol.sprite.position.set(0, yPosition)
+      symbol.sprite.visible = false // Don't show until we switch
+      symbol.sprite.alpha = 1
+      
+      this.newSymbols.push(symbol)
+    }
+
+    console.log(`Reel ${this.reelIndex}: Set final symbols successfully, newSymbols count: ${this.newSymbols.length}`)
+  }
+
   private setupMask(): void {
     const mask = new PIXI.Graphics()
     // Учитываем зазоры в расчете высоты маски
@@ -141,6 +192,8 @@ export default class SlotReel {
   }
 
   private switchToNewSymbols(): void {
+    console.log(`Reel ${this.reelIndex}: switchToNewSymbols called`)
+    
     // Safety check - ensure we have new symbols to switch to
     if (this.newSymbols.length === 0) {
       console.warn(`No new symbols available for reel ${this.reelIndex}, keeping current symbols`)
@@ -148,6 +201,10 @@ export default class SlotReel {
     }
 
     console.log(`Switching symbols for reel ${this.reelIndex}: ${this.symbols.length} current -> ${this.newSymbols.length} new`)
+
+    // Log the symbol types being switched to
+    const newSymbolTypes = this.newSymbols.map(symbol => symbol.symbolType)
+    console.log(`Reel ${this.reelIndex}: New symbol types:`, newSymbolTypes)
 
     // Remove current symbols from display
     this.symbols.forEach(symbol => {
